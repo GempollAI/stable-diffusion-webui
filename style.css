@@ -2,6 +2,14 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600&display=swap');
 
+
+/* temporary fix to hide gradio crop tool until it's fixed https://github.com/gradio-app/gradio/issues/3810 */
+
+div.gradio-image button[aria-label="Edit"] {
+    display: none;
+}
+
+
 /* general gradio fixes */
 
 :root, .dark{
@@ -75,8 +83,10 @@ div.compact{
     white-space: nowrap;
 }
 
-.gradio-dropdown ul.options li.item {
-    padding: 0.05em 0;
+@media (pointer:fine) {
+    .gradio-dropdown ul.options li.item {
+        padding: 0.05em 0;
+    }
 }
 
 .gradio-dropdown ul.options li.item.selected {
@@ -509,6 +519,11 @@ table.popup-table .link{
     background: #b4c0cc;
     border-radius: 3px !important;
     top: -20px;
+    width: 100%;
+}
+
+.progress-container{
+    position: relative;
 }
 
 [id$=_results].mobile{
@@ -613,6 +628,9 @@ table.popup-table .link{
 
 .modalControls {
     display: flex;
+    position: absolute;
+    right: 0px;
+    left: 0px;
     gap: 1em;
     padding: 1em;
     background-color:rgba(0,0,0,0);
@@ -650,13 +668,6 @@ table.popup-table .link{
     height: 100%;
     width: 100%;
     min-height: 0;
-}
-
-#modalImage{
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translateX(-50%) translateY(-50%);
 }
 
 .modalPrev,
@@ -1001,6 +1012,8 @@ div.block.gradio-box.edit-user-metadata {
 
 .edit-user-metadata .file-metadata th, .edit-user-metadata .file-metadata td{
     padding: 0.3em 1em;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .edit-user-metadata .wrap.translucent{

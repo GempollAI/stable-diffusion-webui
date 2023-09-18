@@ -9,7 +9,7 @@ from modules.paths import data_path
 from modules import shared, ui_tempdir, script_callbacks, processing
 from PIL import Image
 
-re_param_code = r'\s*([\w ]+):\s*("(?:\\"[^,]|\\"|\\|[^\"])+"|[^,]*)(?:,|$)'
+re_param_code = r'\s*([\w ]+):\s*("(?:\\.|[^\\"])+"|[^,]*)(?:,|$)'
 re_param = re.compile(re_param_code)
 re_imagesize = re.compile(r"^(\d+)x(\d+)$")
 re_hypernet_hash = re.compile("\(([0-9a-f]+)\)$")
@@ -32,6 +32,7 @@ class ParamBinding:
 
 def reset():
     paste_fields.clear()
+    registered_param_bindings.clear()
 
 
 def quote(text):
