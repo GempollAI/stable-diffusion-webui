@@ -2,7 +2,7 @@
 
 # Default values
 CUDA_VISIBLE_DEVICES=""
-EXPECTED_PYTHON_PATH="/home/ai/mambaforge/envs/aigc/bin/python"
+EXPECTED_PYTHON_PATH="/home/ai/mambaforge/envs/webui/bin/python"
 PORT=""
 
 # Function to validate if a string is an integer
@@ -42,7 +42,7 @@ fi
 # Set CUDA_VISIBLE_DEVICES
 export CUDA_VISIBLE_DEVICES
 
-source ~/mambaforge/bin/activate aigc
+source ~/mambaforge/bin/activate webui
 
 # Check python path
 current_python_path=$(which python)
@@ -57,7 +57,7 @@ echo "Using proxy ${http_proxy}"
 
 # Set TCMalloc 
 export TCMALLOC="$(PATH=/usr/sbin:$PATH ldconfig -p | grep -Po "libtcmalloc(_minimal|)\.so\.\d" | head -n 1)"
-export LD_LIBRARY_PATH="/home/ai/mambaforge/envs/aigc/lib/python3.10/site-packages/tensorrt_libs:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="/home/ai/mambaforge/envs/webui/lib/python3.10/site-packages/tensorrt_libs:$LD_LIBRARY_PATH"
 # Use TCMalloc
 echo "Using TCMalloc ${TCMALLOC}"
 export LD_PRELOAD="${TCMALLOC}"
