@@ -1,9 +1,10 @@
 #!/usr/bin/zsh
 
 # Default values
-CUDA_VISIBLE_DEVICES=""
+CUDA_VISIBLE_DEVICES="0" # Set default GPU to 0
 EXPECTED_PYTHON_PATH="/home/jenson/miniforge3/bin/python"
 PORT=""
+ENABLE_PLUGIN_INSTALL=false # Flag to track plugin installation option
 
 # Function to validate if a string is an integer
 is_valid_integer() {
@@ -26,6 +27,10 @@ while [[ $# -gt 0 ]]; do
                 exit 1
             fi
             ;;
+        --enable-plugin-install)
+            ENABLE_PLUGIN_INSTALL=true
+            shift
+            ;;
         *)
             echo "Invalid option: $1"
             exit 1
@@ -33,9 +38,9 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Check if required options are provided
-if [ -z "$CUDA_VISIBLE_DEVICES" ] || [ -z "$PORT" ]; then
-    echo "Error: Required options --gpu and --port are missing."
+# Check if required option --port is provided
+if [ -z "$PORT" ]; then
+    echo "Error: Required option --port is missing."
     exit 1
 fi
 
@@ -51,7 +56,7 @@ if [ "$current_python_path" != "$EXPECTED_PYTHON_PATH" ]; then
     exit 1
 fi
 
-# Check proxy
+# Set proxy
 export http_proxy="http://host.docker.internal:9910";
 export https_proxy="http://host.docker.internal:9910";
 export HTTP_PROXY="http://host.docker.internal:9910";
@@ -59,11 +64,16 @@ export HTTPS_PROXY="http://host.docker.internal:9910";
 export ALL_PROXY="http://host.docker.internal:9910";
 echo "Using proxy ${http_proxy}"
 
-# Set TCMalloc 
+# Set TCMalloc
 export TCMALLOC="$(PATH=/usr/sbin:$PATH ldconfig -p | grep -Po "libtcmalloc(_minimal|)\.so\.\d" | head -n 1)"
 export LD_LIBRARY_PATH="/home/jenson/miniforge3/lib/python3.10/site-packages/tensorrt_libs:$LD_LIBRARY_PATH"
 # Use TCMalloc
 echo "Using TCMalloc ${TCMALLOC}"
 export LD_PRELOAD="${TCMALLOC}"
 
-python launch.py --listen --enable-insecure-extension-access --xformers --port $PORT
+# Launch command with conditional insecure extension access flag
+if $ENABLE_PLUGIN_INSTALL; then
+    python launch.py --listen --enable-insecure-extension-access --xformers --port $PORT
+else
+    python launch.py --listen --xformers --port $PORT
+fi
