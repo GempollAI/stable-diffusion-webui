@@ -91,6 +91,7 @@ A browser interface based on Gradio library for Stable Diffusion.
 - Eased resolution restriction: generated image's dimensions must be a multiple of 8 rather than 64
 - Now with a license!
 - Reorder elements in the UI from settings screen
+- [Segmind Stable Diffusion](https://huggingface.co/segmind/SSD-1B) support
 
 ## Installation and Running
 Make sure the required [dependencies](https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Dependencies) are met and follow the instructions available for:
@@ -146,7 +147,7 @@ For the purposes of getting Google and other search engines to crawl the wiki, h
 ## Credits
 Licenses for borrowed code can be found in `Settings -> Licenses` screen, and also in `html/licenses.html` file.
 
-- Stable Diffusion - https://github.com/CompVis/stable-diffusion, https://github.com/CompVis/taming-transformers
+- Stable Diffusion - https://github.com/Stability-AI/stablediffusion, https://github.com/CompVis/taming-transformers
 - k-diffusion - https://github.com/crowsonkb/k-diffusion.git
 - GFPGAN - https://github.com/TencentARC/GFPGAN.git
 - CodeFormer - https://github.com/sczhou/CodeFormer
