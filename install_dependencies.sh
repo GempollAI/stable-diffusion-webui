@@ -5,3 +5,5 @@ mamba install -y GitPython einops fastapi gradio inflection jsonmerge kornia lar
 python -m pip install -y accelerate basicsr blendmodes clean-fid gfpgan pytorch_lightning realesrgan resize-right tomesd torchsde
 mamba install -y -c huggingface transformers
 mamba install -y xformers -c xformers
+mamba clean --all -y
+python -m pip cache purge
