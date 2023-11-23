@@ -1,0 +1,12 @@
+#!/usr/bin/zsh
+
+# Assuming the share directory is mounted at /home/jenson/docker_share
+cd /home/jenson/code/stable-diffusion-webui/models
+# Remove existing dirs
+rm -rf Lora
+rm -rf Stable-diffusion
+# Create symlinks
+ln -sf /home/jenson/docker_share/aigc-model-weights/Stable-diffusion Stable-diffusion
+ln -sf /home/jenson/docker_share/aigc-model-weights/Lora Lora
+ln -sf /home/jenson/docker_share/aigc-model-weights/embeddings embeddings
+ln -sf /home/jenson/docker_share/aigc-model-weights/ControlNet ControlNet
