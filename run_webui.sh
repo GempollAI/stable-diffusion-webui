@@ -52,6 +52,11 @@ if [ "$current_python_path" != "$EXPECTED_PYTHON_PATH" ]; then
 fi
 
 # Check proxy
+export http_proxy="http://host.docker.internal:9910";
+export https_proxy="http://host.docker.internal:9910";
+export HTTP_PROXY="http://host.docker.internal:9910";
+export HTTPS_PROXY="http://host.docker.internal:9910";
+export ALL_PROXY="http://host.docker.internal:9910";
 echo "Using proxy ${http_proxy}"
 
 # Set TCMalloc 
