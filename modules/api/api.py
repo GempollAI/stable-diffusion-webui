@@ -22,7 +22,6 @@ from modules.api import models
 from modules.shared import opts
 from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, process_images
 from modules.textual_inversion.textual_inversion import create_embedding, train_embedding
-from modules.textual_inversion.preprocess import preprocess
 from modules.hypernetworks.hypernetwork import create_hypernetwork, train_hypernetwork
 from PIL import PngImagePlugin, Image
 from modules.sd_models_config import find_checkpoint_config_near_filename
@@ -32,7 +31,7 @@ from typing import Any
 import piexif
 import piexif.helper
 from contextlib import closing
-
+from modules.progress import create_task_id, add_task_to_queue, start_task, finish_task, current_task
 
 def script_name_to_index(name, scripts):
     try:
@@ -235,7 +234,6 @@ class Api:
         self.add_api_route("/sdapi/v1/refresh-vae", self.refresh_vae, methods=["POST"])
         self.add_api_route("/sdapi/v1/create/embedding", self.create_embedding, methods=["POST"], response_model=models.CreateResponse)
         self.add_api_route("/sdapi/v1/create/hypernetwork", self.create_hypernetwork, methods=["POST"], response_model=models.CreateResponse)
-        self.add_api_route("/sdapi/v1/preprocess", self.preprocess, methods=["POST"], response_model=models.PreprocessResponse)
         self.add_api_route("/sdapi/v1/train/embedding", self.train_embedding, methods=["POST"], response_model=models.TrainResponse)
         self.add_api_route("/sdapi/v1/train/hypernetwork", self.train_hypernetwork, methods=["POST"], response_model=models.TrainResponse)
         self.add_api_route("/sdapi/v1/memory", self.get_memory, methods=["GET"], response_model=models.MemoryResponse)
@@ -338,6 +336,8 @@ class Api:
         return script_args
 
     def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI):
+        task_id = txt2imgreq.force_task_id or create_task_id("txt2img")
+
         script_runner = scripts.scripts_txt2img
         if not script_runner.scripts:
             script_runner.initialize_scripts(False)
@@ -364,6 +364,8 @@ class Api:
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
 
+        add_task_to_queue(task_id)
+
         with self.queue_lock:
             with closing(StableDiffusionProcessingTxt2Img(sd_model=shared.sd_model, **args)) as p:
                 p.is_api = True
@@ -373,12 +375,14 @@ class Api:
 
                 try:
                     shared.state.begin(job="scripts_txt2img")
+                    start_task(task_id)
                     if selectable_scripts is not None:
                         p.script_args = script_args
                         processed = scripts.scripts_txt2img.run(p, *p.script_args) # Need to pass args as list here
                     else:
                         p.script_args = tuple(script_args) # Need to pass args as tuple here
                         processed = process_images(p)
+                    finish_task(task_id)
                 finally:
                     shared.state.end()
                     shared.total_tqdm.clear()
@@ -388,6 +392,8 @@ class Api:
         return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
 
     def img2imgapi(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
+        task_id = img2imgreq.force_task_id or create_task_id("img2img")
+
         init_images = img2imgreq.init_images
         if init_images is None:
             raise HTTPException(status_code=404, detail="Init image not found")
@@ -424,6 +430,8 @@ class Api:
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
 
+        add_task_to_queue(task_id)
+
         with self.queue_lock:
             with closing(StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)) as p:
                 p.init_images = [decode_base64_to_image(x) for x in init_images]
@@ -434,12 +442,14 @@ class Api:
 
                 try:
                     shared.state.begin(job="scripts_img2img")
+                    start_task(task_id)
                     if selectable_scripts is not None:
                         p.script_args = script_args
                         processed = scripts.scripts_img2img.run(p, *p.script_args) # Need to pass args as list here
                     else:
                         p.script_args = tuple(script_args) # Need to pass args as tuple here
                         processed = process_images(p)
+                    finish_task(task_id)
                 finally:
                     shared.state.end()
                     shared.total_tqdm.clear()
@@ -513,7 +523,7 @@ class Api:
         if shared.state.current_image and not req.skip_current_image:
             current_image = encode_pil_to_base64(shared.state.current_image)
 
-        return models.ProgressResponse(progress=progress, eta_relative=eta_relative, state=shared.state.dict(), current_image=current_image, textinfo=shared.state.textinfo)
+        return models.ProgressResponse(progress=progress, eta_relative=eta_relative, state=shared.state.dict(), current_image=current_image, textinfo=shared.state.textinfo, current_task=current_task)
 
     def interrogateapi(self, interrogatereq: models.InterrogateRequest):
         image_b64 = interrogatereq.image
@@ -672,19 +682,6 @@ class Api:
             return models.CreateResponse(info=f"create hypernetwork filename: {filename}")
         except AssertionError as e:
             return models.TrainResponse(info=f"create hypernetwork error: {e}")
-        finally:
-            shared.state.end()
-
-    def preprocess(self, args: dict):
-        try:
-            shared.state.begin(job="preprocess")
-            preprocess(**args) # quick operation unless blip/booru interrogation is enabled
-            shared.state.end()
-            return models.PreprocessResponse(info='preprocess complete')
-        except KeyError as e:
-            return models.PreprocessResponse(info=f"preprocess error: invalid token: {e}")
-        except Exception as e:
-            return models.PreprocessResponse(info=f"preprocess error: {e}")
         finally:
             shared.state.end()
 
