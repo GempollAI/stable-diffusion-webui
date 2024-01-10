@@ -401,6 +401,7 @@ def load_model_weights(model, checkpoint_info: CheckpointInfo, state_dict, timer
 
     if shared.cmd_opts.no_half:
         model.float()
+        model.alphas_cumprod_original = model.alphas_cumprod
         devices.dtype_unet = torch.float32
         timer.record("apply float()")
     else:
@@ -414,7 +415,11 @@ def load_model_weights(model, checkpoint_info: CheckpointInfo, state_dict, timer
         if shared.cmd_opts.upcast_sampling and depth_model:
             model.depth_model = None
 
+        alphas_cumprod = model.alphas_cumprod
+        model.alphas_cumprod = None
         model.half()
+        model.alphas_cumprod = alphas_cumprod
+        model.alphas_cumprod_original = alphas_cumprod
         model.first_stage_model = vae
         if depth_model:
             model.depth_model = depth_model
@@ -691,6 +696,7 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
     else:
         weight_dtype_conversion = {
             'first_stage_model': None,
+            'alphas_cumprod': None,
             '': torch.float16,
         }
 
@@ -836,12 +842,12 @@ def reload_model_weights(sd_model=None, info=None, forced_reload=False):
         sd_hijack.model_hijack.hijack(sd_model)
         timer.record("hijack")
 
-        script_callbacks.model_loaded_callback(sd_model)
-        timer.record("script callbacks")
-
         if not sd_model.lowvram:
             sd_model.to(devices.device)
             timer.record("move model to device")
+
+        script_callbacks.model_loaded_callback(sd_model)
+        timer.record("script callbacks")
 
     print(f"Weights loaded in {timer.summary()}.")
 
