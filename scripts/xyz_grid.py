@@ -45,7 +45,7 @@ def apply_prompt(p, x, xs):
 def apply_order(p, x, xs):
     token_order = []
 
-    # Initally grab the tokens from the prompt, so they can be replaced in order of earliest seen
+    # Initially grab the tokens from the prompt, so they can be replaced in order of earliest seen
     for token in x:
         token_order.append((p.prompt.find(token), token))
 
@@ -554,6 +554,8 @@ class Script(scripts.Script):
                 valslist_ext = []
 
                 for val in valslist:
+                    if val.strip() == '':
+                        continue
                     m = re_range.fullmatch(val)
                     mc = re_range_count.fullmatch(val)
                     if m is not None:
@@ -576,6 +578,8 @@ class Script(scripts.Script):
                 valslist_ext = []
 
                 for val in valslist:
+                    if val.strip() == '':
+                        continue
                     m = re_range_float.fullmatch(val)
                     mc = re_range_count_float.fullmatch(val)
                     if m is not None:
