@@ -139,16 +139,17 @@ def initialize_rest(*, reload_script_modules=False):
         """
         Accesses shared.sd_model property to load model.
         After it's available, if it has been loaded before this access by some extension,
-        its optimization may be None because the list of optimizaers has neet been filled
+        its optimization may be None because the list of optimizers has not been filled
         by that time, so we apply optimization again.
         """
+        from modules import devices
+        devices.torch_npu_set_device()
 
         shared.sd_model  # noqa: B018
 
         if sd_hijack.current_optimizer is None:
             sd_hijack.apply_optimizations()
 
-        from modules import devices
         devices.first_time_calculation()
     if not shared.cmd_opts.skip_load_model_at_start:
         Thread(target=load_model).start()

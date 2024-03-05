@@ -17,10 +17,10 @@ def run_postprocessing(extras_mode, image, image_folder, input_dir, output_dir, 
         if extras_mode == 1:
             for img in image_folder:
                 if isinstance(img, Image.Image):
-                    image = img
+                    image = images.fix_image(img)
                     fn = ''
                 else:
-                    image = Image.open(os.path.abspath(img.name))
+                    image = images.read(os.path.abspath(img.name))
                     fn = os.path.splitext(img.orig_name)[0]
                 yield image, fn
         elif extras_mode == 2:
@@ -56,13 +56,11 @@ def run_postprocessing(extras_mode, image, image_folder, input_dir, output_dir, 
 
         if isinstance(image_placeholder, str):
             try:
-                image_data = Image.open(image_placeholder)
+                image_data = images.read(image_placeholder)
             except Exception:
                 continue
         else:
             image_data = image_placeholder
-
-        shared.state.assign_current_image(image_data)
 
         parameters, existing_pnginfo = images.read_info_from_image(image_data)
         if parameters:
@@ -91,6 +89,8 @@ def run_postprocessing(extras_mode, image, image_folder, input_dir, output_dir, 
             if opts.enable_pnginfo:
                 pp.image.info = existing_pnginfo
                 pp.image.info["postprocessing"] = infotext
+
+            shared.state.assign_current_image(pp.image)
 
             if save_output:
                 fullfn, _ = images.save_image(pp.image, path=outpath, basename=basename, extension=opts.samples_format, info=infotext, short_filename=True, no_prompt=True, grid=False, pnginfo_section_name="extras", existing_info=existing_pnginfo, forced_filename=forced_filename, suffix=suffix)
