@@ -85,7 +85,7 @@ def decode_base64_to_image(encoding):
         headers = {'user-agent': opts.api_useragent} if opts.api_useragent else {}
         response = requests.get(encoding, timeout=30, headers=headers)
         try:
-            image = Image.open(BytesIO(response.content))
+            image = images.read(BytesIO(response.content))
             return image
         except Exception as e:
             raise HTTPException(status_code=500, detail="Invalid image url") from e
@@ -93,7 +93,7 @@ def decode_base64_to_image(encoding):
     if encoding.startswith("data:image/"):
         encoding = encoding.split(";")[1].split(",")[1]
     try:
-        image = Image.open(BytesIO(base64.b64decode(encoding)))
+        image = images.read(BytesIO(base64.b64decode(encoding)))
         return image
     except Exception as e:
         raise HTTPException(status_code=500, detail="Invalid encoded image") from e
@@ -230,6 +230,7 @@ class Api:
         self.add_api_route("/sdapi/v1/realesrgan-models", self.get_realesrgan_models, methods=["GET"], response_model=list[models.RealesrganItem])
         self.add_api_route("/sdapi/v1/prompt-styles", self.get_prompt_styles, methods=["GET"], response_model=list[models.PromptStyleItem])
         self.add_api_route("/sdapi/v1/embeddings", self.get_embeddings, methods=["GET"], response_model=models.EmbeddingsResponse)
+        self.add_api_route("/sdapi/v1/refresh-embeddings", self.refresh_embeddings, methods=["POST"])
         self.add_api_route("/sdapi/v1/refresh-checkpoints", self.refresh_checkpoints, methods=["POST"])
         self.add_api_route("/sdapi/v1/refresh-vae", self.refresh_vae, methods=["POST"])
         self.add_api_route("/sdapi/v1/create/embedding", self.create_embedding, methods=["POST"], response_model=models.CreateResponse)
@@ -359,7 +360,7 @@ class Api:
         return script_args
 
     def apply_infotext(self, request, tabname, *, script_runner=None, mentioned_script_args=None):
-        """Processes `infotext` field from the `request`, and sets other fields of the `request` accoring to what's in infotext.
+        """Processes `infotext` field from the `request`, and sets other fields of the `request` according to what's in infotext.
 
         If request already has a field set, and that field is encountered in infotext too, the value from infotext is ignored.
 
@@ -408,8 +409,8 @@ class Api:
         if request.override_settings is None:
             request.override_settings = {}
 
-        overriden_settings = infotext_utils.get_override_settings(params)
-        for _, setting_name, value in overriden_settings:
+        overridden_settings = infotext_utils.get_override_settings(params)
+        for _, setting_name, value in overridden_settings:
             if setting_name not in request.override_settings:
                 request.override_settings[setting_name] = value
 
@@ -746,6 +747,10 @@ class Api:
             "loaded": convert_embeddings(db.word_embeddings),
             "skipped": convert_embeddings(db.skipped_embeddings),
         }
+
+    def refresh_embeddings(self):
+        with self.queue_lock:
+            sd_hijack.model_hijack.embedding_db.load_textual_inversion_embeddings(force_reload=True)
 
     def refresh_checkpoints(self):
         with self.queue_lock:

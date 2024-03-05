@@ -260,11 +260,11 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
 
     loaded_networks.clear()
 
-    networks_on_disk = [available_network_aliases.get(name, None) for name in names]
+    networks_on_disk = [available_networks.get(name, None) if name.lower() in forbidden_network_aliases else available_network_aliases.get(name, None) for name in names]
     if any(x is None for x in networks_on_disk):
         list_available_networks()
 
-        networks_on_disk = [available_network_aliases.get(name, None) for name in names]
+        networks_on_disk = [available_networks.get(name, None) if name.lower() in forbidden_network_aliases else available_network_aliases.get(name, None) for name in names]
 
     failed_to_load_networks = []
 
@@ -355,7 +355,7 @@ def network_apply_weights(self: Union[torch.nn.Conv2d, torch.nn.Linear, torch.nn
     """
     Applies the currently selected set of networks to the weights of torch layer self.
     If weights already have this particular set of networks applied, does nothing.
-    If not, restores orginal weights from backup and alters weights according to networks.
+    If not, restores original weights from backup and alters weights according to networks.
     """
 
     network_layer_name = getattr(self, 'network_layer_name', None)

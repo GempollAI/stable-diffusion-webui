@@ -8,7 +8,7 @@ import sys
 
 import gradio as gr
 from modules.paths import data_path
-from modules import shared, ui_tempdir, script_callbacks, processing, infotext_versions
+from modules import shared, ui_tempdir, script_callbacks, processing, infotext_versions, images
 from PIL import Image
 
 sys.modules['modules.generation_parameters_copypaste'] = sys.modules[__name__]  # alias for old name
@@ -83,7 +83,7 @@ def image_from_url_text(filedata):
         assert is_in_right_dir, 'trying to open image file outside of allowed directories'
 
         filename = filename.rsplit('?', 1)[0]
-        return Image.open(filename)
+        return images.read(filename)
 
     if type(filedata) == list:
         if len(filedata) == 0:
@@ -95,7 +95,7 @@ def image_from_url_text(filedata):
         filedata = filedata[len("data:image/png;base64,"):]
 
     filedata = base64.decodebytes(filedata.encode('utf-8'))
-    image = Image.open(io.BytesIO(filedata))
+    image = images.read(io.BytesIO(filedata))
     return image
 
 
@@ -230,7 +230,7 @@ def restore_old_hires_fix_params(res):
     res['Hires resize-2'] = height
 
 
-def parse_generation_parameters(x: str):
+def parse_generation_parameters(x: str, skip_fields: list[str] | None = None):
     """parses generation parameters string, the one you see in text field under the picture in UI:
 ```
 girl with an artist's beret, determined, blue eyes, desert scene, computer monitors, heavy makeup, by Alphonse Mucha and Charlie Bowater, ((eyeshadow)), (coquettish), detailed, intricate
@@ -240,6 +240,8 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
 
     returns a dict with field values
     """
+    if skip_fields is None:
+        skip_fields = shared.opts.infotext_skip_pasting
 
     res = {}
 
@@ -354,10 +356,16 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
     if "Cache FP16 weight for LoRA" not in res and res["FP8 weight"] != "Disable":
         res["Cache FP16 weight for LoRA"] = False
 
+    if "Emphasis" not in res:
+        res["Emphasis"] = "Original"
+
+    if "Refiner switch by sampling steps" not in res:
+        res["Refiner switch by sampling steps"] = False
+
     infotext_versions.backcompat(res)
 
-    skip = set(shared.opts.infotext_skip_pasting)
-    res = {k: v for k, v in res.items() if k not in skip}
+    for key in skip_fields:
+        res.pop(key, None)
 
     return res
 
