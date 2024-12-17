@@ -73,7 +73,7 @@ export LD_PRELOAD="${TCMALLOC}"
 
 # Launch command with conditional insecure extension access flag
 if $ENABLE_PLUGIN_INSTALL; then
-    python launch.py --listen --enable-insecure-extension-access --xformers --port $PORT
+    accelerate launch --num_cpu_threads_per_process=6 "launch.py" --listen --enable-insecure-extension-access --xformers --port $PORT
 else
-    python launch.py --listen --xformers --port $PORT
+    accelerate launch --num_cpu_threads_per_process=6 "launch.py" --listen --xformers --port $PORT
 fi
