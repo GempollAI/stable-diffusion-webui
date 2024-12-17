@@ -66,7 +66,7 @@ echo "Using proxy ${http_proxy}"
 
 # Set TCMalloc
 export TCMALLOC="$(PATH=/usr/sbin:$PATH ldconfig -p | grep -Po "libtcmalloc(_minimal|)\.so\.\d" | head -n 1)"
-export LD_LIBRARY_PATH="/home/jenson/miniforge3/lib/python3.10/site-packages/tensorrt_libs:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="/home/jenson/miniforge3/lib/python3.12/site-packages/tensorrt_libs:$LD_LIBRARY_PATH"
 # Use TCMalloc
 echo "Using TCMalloc ${TCMALLOC}"
 export LD_PRELOAD="${TCMALLOC}"
