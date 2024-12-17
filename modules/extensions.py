@@ -16,6 +16,10 @@ extensions: list[Extension] = []
 extension_paths: dict[str, Extension] = {}
 loaded_extensions: dict[str, Exception] = {}
 
+extensions: list[Extension] = []
+extension_paths: dict[str, Extension] = {}
+loaded_extensions: dict[str, Exception] = {}
+
 
 os.makedirs(extensions_dir, exist_ok=True)
 

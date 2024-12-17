@@ -240,6 +240,13 @@ class SchedulerItem(BaseModel):
     default_rho: Optional[float] = Field(title="Default Rho")
     need_inner_model: Optional[bool] = Field(title="Needs Inner Model")
 
+class SchedulerItem(BaseModel):
+    name: str = Field(title="Name")
+    label: str = Field(title="Label")
+    aliases: Optional[list[str]] = Field(title="Aliases")
+    default_rho: Optional[float] = Field(title="Default Rho")
+    need_inner_model: Optional[bool] = Field(title="Needs Inner Model")
+
 class UpscalerItem(BaseModel):
     class Config:
         protected_namespaces = ()
