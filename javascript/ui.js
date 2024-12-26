@@ -10,7 +10,7 @@ async function setTextToImgParams() {
   if (params) {
     await getDomWithDelay('pnginfo_generation_info');
     gradioApp().getElementById('pnginfo_generation_info').querySelector('textarea').value = params;
-    window.gradioApp().getElementById('component-1738').querySelectorAll('button')[0]?.click()
+    window.gradioApp().getElementById('txt2img_tab').click()
   }
 }
 
