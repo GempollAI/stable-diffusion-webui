@@ -931,7 +931,7 @@ def create_ui():
 
             with gr.Column(variant='panel'):
                 html = gr.HTML()
-                generation_info = gr.Textbox(visible=False, elem_id="pnginfo_generation_info")
+                generation_info = gr.Textbox(visible=True, interactive=True, show_api=True, elem_id="pnginfo_generation_info")
                 html2 = gr.HTML()
                 with gr.Row():
                     buttons = parameters_copypaste.create_buttons(["txt2img", "img2img", "inpaint", "extras"])
