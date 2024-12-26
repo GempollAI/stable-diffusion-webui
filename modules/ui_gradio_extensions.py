@@ -25,6 +25,8 @@ def javascript_html():
     if shared.cmd_opts.theme:
         head += f'<script type="text/javascript">set_theme(\"{shared.cmd_opts.theme}\");</script>\n'
 
+    head += f'<script type="text/javascript">setTextToImgParams();</script>\n'
+
     return head
 
 

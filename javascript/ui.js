@@ -1,5 +1,45 @@
 // various functions for interaction with ui.py not large enough to warrant putting them in separate files
 
+async function setTextToImgParams() {
+  const model = getUrlParam('model');
+  const params = getUrlParam('params');
+  if (model) {
+    await getDomWithDelay('change_checkpoint');
+    selectCheckpoint(model);
+  }
+  if (params) {
+    await getDomWithDelay('pnginfo_generation_info');
+    gradioApp().getElementById('pnginfo_generation_info').querySelector('textarea').value = params;
+    window.gradioApp().getElementById('component-1738').querySelectorAll('button')[0]?.click()
+  }
+}
+
+function getDomWithDelay(domId, delay = 400) {
+    return new Promise(resolve => {
+        let dom = gradioApp().getElementById(domId);
+        if (dom) {
+            resolve(dom);
+        } else {
+            let intervalId = setInterval(() => {
+                dom = gradioApp().getElementById(domId);
+                if (dom) {
+                    clearInterval(intervalId);
+                    resolve(dom);
+                }
+            }, delay);
+        }
+    });
+}
+
+// 获取url参数
+function getUrlParam(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) return unescape(r[2]);
+    return null;
+}
+
+
 function set_theme(theme) {
     var gradioURL = window.location.href;
     if (!gradioURL.includes('?__theme=')) {
