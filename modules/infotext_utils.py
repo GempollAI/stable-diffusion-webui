@@ -255,9 +255,9 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
 
     returns a dict with field values
     """
-    if GLOBAL_PNG_INFOR is not None:
+    if GLOBAL_PNG_INFOR.png_info is not None:
         print("Global!!!!!!!!!!!!!!!!!!")
-        return GLOBAL_PNG_INFOR
+        return GLOBAL_PNG_INFOR.png_info
 
     if skip_fields is None:
         skip_fields = shared.opts.infotext_skip_pasting
