@@ -10,6 +10,7 @@ import gradio as gr
 from modules.paths import data_path
 from modules import shared, ui_tempdir, script_callbacks, processing, infotext_versions, images, prompt_parser, errors
 from PIL import Image
+from script_callbacks import GLOBAL_PNG_INFOR
 
 from modules_forge import main_entry
 
@@ -254,6 +255,10 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
 
     returns a dict with field values
     """
+    if GLOBAL_PNG_INFOR is not None:
+        print("Global!!!!!!!!!!!!!!!!!!")
+        return GLOBAL_PNG_INFOR
+
     if skip_fields is None:
         skip_fields = shared.opts.infotext_skip_pasting
 

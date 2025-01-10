@@ -610,7 +610,7 @@ class Api:
             geninfo = ""
 
         params = infotext_utils.parse_generation_parameters(geninfo)
-        script_callbacks.infotext_pasted_callback(geninfo, params)
+        script_callbacks.infotext_pasted_callback(geninfo, params, from_api=True)
 
         return models.PNGInfoResponse(info=geninfo, items=items, parameters=params)
 

@@ -10,6 +10,8 @@ from gradio import Blocks
 
 from modules import errors, timer, extensions, shared, util
 
+GLOBAL_PNG_INFOR = None
+
 
 def report_exception(c, job):
     errors.report(f"Error executing callback {job} for {c.script}", exc_info=True)
@@ -375,7 +377,11 @@ def image_grid_callback(params: ImageGridLoopParams):
             report_exception(c, 'image_grid')
 
 
-def infotext_pasted_callback(infotext: str, params: dict[str, Any]):
+def infotext_pasted_callback(infotext: str, params: dict[str, Any], from_api=False):
+    global GLOBAL_PNG_INFOR
+    if from_api:
+        GLOBAL_PNG_INFOR = params
+        print("Set Global!!!!!!!!!!!!!!!!")
     for c in ordered_callbacks('infotext_pasted'):
         try:
             c.callback(infotext, params)
