@@ -255,10 +255,6 @@ Steps: 20, Sampler: Euler a, CFG scale: 7, Seed: 965400086, Size: 512x512, Model
 
     returns a dict with field values
     """
-    if GLOBAL_PNG_INFOR.png_info is not None:
-        print("Global!!!!!!!!!!!!!!!!!!")
-        return GLOBAL_PNG_INFOR.png_info
-
     if skip_fields is None:
         skip_fields = shared.opts.infotext_skip_pasting
 
@@ -580,8 +576,11 @@ def connect_paste(button, paste_fields, input_comp, override_settings_component,
                     prompt = file.read()
             except OSError:
                 pass
-
-        params = parse_generation_parameters(prompt)
+        if GLOBAL_PNG_INFOR.png_info is None:
+            params = parse_generation_parameters(prompt)
+        else:
+            print("Using Gloabl!!!!!!!!!!")
+            params = GLOBAL_PNG_INFOR.png_info
         script_callbacks.infotext_pasted_callback(prompt, params)
         res = []
 
