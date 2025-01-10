@@ -213,6 +213,7 @@ class Api:
         self.add_api_route("/sdapi/v1/extra-single-image", self.extras_single_image_api, methods=["POST"], response_model=models.ExtrasSingleImageResponse)
         self.add_api_route("/sdapi/v1/extra-batch-images", self.extras_batch_images_api, methods=["POST"], response_model=models.ExtrasBatchImagesResponse)
         self.add_api_route("/sdapi/v1/png-info", self.pnginfoapi, methods=["POST"], response_model=models.PNGInfoResponse)
+        self.add_api_route("/sdapi/gempoll/set_png_info", self.set_png_info, methods=["POST"], response_model=models.PNGInfoResponse)
         self.add_api_route("/sdapi/v1/progress", self.progressapi, methods=["GET"], response_model=models.ProgressResponse)
         self.add_api_route("/sdapi/v1/interrogate", self.interrogateapi, methods=["POST"])
         self.add_api_route("/sdapi/v1/interrupt", self.interruptapi, methods=["POST"])
@@ -600,6 +601,13 @@ class Api:
 
         return models.ExtrasBatchImagesResponse(images=list(map(encode_pil_to_base64, result[0])), html_info=result[1])
 
+    def set_png_info(self, req: models.PNGInfoRequest):
+        geninfo = req.image
+        params = infotext_utils.parse_generation_parameters(geninfo)
+        script_callbacks.infotext_pasted_callback(geninfo, params, from_api=True)
+        return models.PNGInfoResponse(info=geninfo, items={}, parameters=params)
+
+
     def pnginfoapi(self, req: models.PNGInfoRequest):
         image = decode_base64_to_image(req.image.strip())
         if image is None:
@@ -610,7 +618,7 @@ class Api:
             geninfo = ""
 
         params = infotext_utils.parse_generation_parameters(geninfo)
-        script_callbacks.infotext_pasted_callback(geninfo, params, from_api=True)
+        script_callbacks.infotext_pasted_callback(geninfo, params)
 
         return models.PNGInfoResponse(info=geninfo, items=items, parameters=params)
 
